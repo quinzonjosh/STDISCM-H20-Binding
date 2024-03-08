@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="95c22252-1efb-4cea-9225-7d3e3978e228" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/Client.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Hydrogen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Hydrogen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Oxygen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Oxygen.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +34,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.Hydrogen.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "cy-dev",
@@ -50,6 +50,20 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration name="Hydrogen" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Hydrogen" />
+      <module name="STDISCM-H20-Binder" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Hydrogen" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -66,7 +80,7 @@
       <option name="presentableId" value="Default" />
       <updated>1709872110202</updated>
       <workItem from="1709872461302" duration="204000" />
-      <workItem from="1709872676393" duration="424000" />
+      <workItem from="1709872676393" duration="1058000" />
     </task>
     <servers />
   </component>
