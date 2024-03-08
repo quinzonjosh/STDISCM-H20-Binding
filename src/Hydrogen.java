@@ -1,2 +1,2 @@
-public class Hydrogen extends Client{
+public class Hydrogen{
 }

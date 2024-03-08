@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="95c22252-1efb-4cea-9225-7d3e3978e228" name="Changes" comment="" />
+    <list default="true" id="95c22252-1efb-4cea-9225-7d3e3978e228" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/Client.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Hydrogen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Hydrogen.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Oxygen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Oxygen.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -30,7 +37,12 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "cy-dev",
     "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
@@ -54,6 +66,7 @@
       <option name="presentableId" value="Default" />
       <updated>1709872110202</updated>
       <workItem from="1709872461302" duration="204000" />
+      <workItem from="1709872676393" duration="424000" />
     </task>
     <servers />
   </component>

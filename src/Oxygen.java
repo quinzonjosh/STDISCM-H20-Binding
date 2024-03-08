@@ -1,3 +1,2 @@
-public class Oxygen extends Client{
-
+public class Oxygen {
 }
