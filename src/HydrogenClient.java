@@ -1,3 +1,4 @@
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -16,9 +17,41 @@ public class HydrogenClient {
     private static final int BINDER_SERVER_PORT = 4999;
 
     public static void main(String[] args) {
+
+        String masterAddress;
+
+        // Check if a custom address was provided as an argument
+        if (args.length > 0) { // Check if there is at least one argument
+            masterAddress = args[0];
+        } else {
+            masterAddress = BINDER_SERVER_ADDRESS;
+        }
+
+
         getUserInput();
+        generateServerListener(masterAddress);
         generateMolecules();
     }
+
+    private static void generateServerListener(String masterAddress) {
+        //listen for server port
+        Thread serverListener = new Thread(() -> {
+            try (Socket socket = new Socket(masterAddress, 4999)) {
+                System.out.println("Connected to Master Server at " + masterAddress + ":4999");
+
+                try(DataInputStream dis = new DataInputStream(socket.getInputStream())) {
+                    while (true){
+                        String log = dis.readUTF();
+                        System.out.println("From Server: " + log);
+                    }
+                }
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        });
+        serverListener.start();
+    }
+
 
     private static void generateMolecules() {
         int batch = hydrogenCount / nThreads;
@@ -33,10 +66,12 @@ public class HydrogenClient {
             try (Socket binderSocket = new Socket(BINDER_SERVER_ADDRESS, BINDER_SERVER_PORT);
                 DataOutputStream dos = new DataOutputStream(binderSocket.getOutputStream())){
                 Callable<Void> task = () -> {
+
+                    dos.writeUTF("Hydrogen");
                     //send out hydrogen molecules one by one
                     for(int j = start; j < end; j++){
                         System.out.println("Generating hydrogen H"+j);
-                        dos.writeChars("H"+j);
+                        dos.writeUTF("H"+j);
                     }
                     return null;
                 };
