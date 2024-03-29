@@ -39,12 +39,14 @@ public class HydrogenClient {
 
     private void sendHydrogenMolecules() {
         try {
-            dos.writeInt(hydrogenCount);
+            dos.writeUTF("Hydrogen");
 
             for (int i=0; i<hydrogenCount; i++){
                 dos.writeUTF("H"+i);
                 dos.flush();
             }
+            dos.writeUTF("DONE");
+            dos.flush();
             dos.close();
         } catch (IOException e){
             e.printStackTrace();

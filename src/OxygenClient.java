@@ -1,70 +1,63 @@
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class OxygenClient {
+    public static int oxygenCount;
+    private DataInputStream dis;
+    private DataOutputStream dos;
+    private int SERVER_PORT;
+    private String SERVER_ADDRESS;
 
-    private static int oxygenCount;
-    private static final int nThreads = 8;
-    private static final String BINDER_SERVER_ADDRESS = "localhost";
-    private static final int BINDER_SERVER_PORT = 4999;
-
-    public static void main(String[] args) {
-        getUserInput();
-        generateMolecules();
+    public OxygenClient(String SERVER_ADDRESS, int SERVER_PORT) {
+        this.SERVER_ADDRESS = SERVER_ADDRESS;
+        this.SERVER_PORT = SERVER_PORT;
     }
 
-    private static void generateMolecules() {
-        int batch = oxygenCount / nThreads;
-        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-        List<Future<Void>> futures = new ArrayList<>();
+    private void start() {
+        try {
+            Socket serverSocket = new Socket(this.SERVER_ADDRESS, this.SERVER_PORT);
+            System.out.println("Connected to server.");
 
-        // create threads that independently generate molecules and send out to server
-        for(int i = 0; i < nThreads; i++){
-            final int start = i * batch;
-            final int end = (i == nThreads - 1) ? oxygenCount : (i + 1) * batch;
+            this.dos = new DataOutputStream(serverSocket.getOutputStream());
 
-            try (Socket binderSocket = new Socket(BINDER_SERVER_ADDRESS, BINDER_SERVER_PORT);
-                 DataOutputStream dos = new DataOutputStream(binderSocket.getOutputStream())){
-                Callable<Void> task = () -> {
-                    //send out oxygen molecules one by one
-                    for(int j = start; j < end; j++){
-                        System.out.println("Generating oxygen O"+j);
-                        dos.writeChars("O"+j);
-                    }
-                    return null;
-                };
+            getUserInput();
+            sendOxygenMolecules();
 
-                futures.add(executorService.submit(task));
-
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        for(Future<Void> future : futures){
-            try {
-                future.get();
-            } catch (Exception e){
-                e.printStackTrace();
+    private void sendOxygenMolecules() {
+        try {
+            dos.writeUTF("Oxygen");
+
+            for (int i = 0; i < oxygenCount; i++) {
+                dos.writeUTF("O" + i);
+                dos.flush();
             }
+            dos.writeUTF("DONE");
+            dos.flush();
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        executorService.shutdown();
     }
 
     private static void getUserInput() {
         Scanner input = new Scanner(System.in);
-        System.out.print("Enter number of oxygen Molecules to send: ");
+        System.out.print("Enter number of Oxygen Molecules to send: ");
         oxygenCount = input.nextInt();
     }
 
+    public static void main(String[] args) {
+        int SERVER_PORT = 4999;
+        String SERVER_ADDRESS = "localhost";
+
+        OxygenClient oxygenClient = new OxygenClient(SERVER_ADDRESS, SERVER_PORT);
+        oxygenClient.start();
+    }
 }
