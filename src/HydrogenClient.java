@@ -161,42 +161,6 @@ public class HydrogenClient {
         }
     }
 
-
-
-//    private void sendHydrogenMolecules() {
-//        int batch = hydrogenCount / NTHREADS;
-//        ExecutorService executorService = Executors.newFixedThreadPool(NTHREADS);
-//
-//        for(int j=0; j<NTHREADS; j++){
-//            final int start = j * batch;
-//            final int end = (j == NTHREADS - 1) ? hydrogenCount : (j + 1) * batch;
-//
-//            executorService.execute(()->{
-//                try{
-//                    for(int i=start; i<=end; i++){
-//                        dos.writeUTF("H"+i);
-//                        dos.flush();
-//                        System.out.println("sent H" + i);
-//                    }
-//
-//                    dos.writeUTF("DONE");
-//                    dos.flush();
-//                }catch (IOException e){
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
-//
-//        executorService.shutdown();
-//        while (!executorService.isTerminated()){
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//    }
-
     private static void getUserInput() {
         Scanner input = new Scanner(System.in);
         System.out.print("Enter number of Hydrogen Molecules to send: ");
