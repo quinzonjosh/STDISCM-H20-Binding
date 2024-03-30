@@ -21,7 +21,7 @@ public class HydrogenClient {
 
     private List<Thread> threads = new ArrayList<>();
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS");
     public HydrogenClient(String SERVER_ADDRESS, int SERVER_PORT){
         this.SERVER_ADDRESS = SERVER_ADDRESS;
         this.SERVER_PORT = SERVER_PORT;
@@ -82,60 +82,11 @@ public class HydrogenClient {
                     e.printStackTrace();
                 }
             }
-
             dos.writeUTF("DONE");
         } catch (IOException e){
             e.printStackTrace();
         }
 
-
-
-//        ExecutorService executorService = Executors.newFixedThreadPool(NTHREADS);
-
-//        try {
-//            dos.writeUTF("Hydrogen");
-//
-//            for(int i = 0; i < NTHREADS; i++) {
-//                final int start = i * batch;
-//                final int end = (i == NTHREADS - 1) ? hydrogenCount : (i + 1) * batch;
-//
-//                System.out.printf("(%d, %d)%n", start, end);
-//
-//                executorService.submit(() -> {
-//                    for(int j = start; j < end; j++){
-//                        try {
-//                            String element = "H"+j;
-//                            dos.writeUTF(element);
-////                            dos.flush();
-//                            String log = element + ", requested, " + LocalDateTime.now().format(FORMATTER);
-//                            System.out.println(log);
-//                        } catch (IOException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    }
-//                });
-//            }
-//
-//            executorService.shutdown();
-//
-//            // Wait indefinitely for all tasks to complete
-//            try {
-//                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//                // (Re-)Cancel if current thread also interrupted
-//                executorService.shutdownNow();
-//                // Preserve interrupt status
-//                Thread.currentThread().interrupt();
-//            }
-//
-//
-//            dos.writeUTF("DONE");
-//            dos.flush();
-////            dos.close();
-//        } catch (IOException e){
-//            e.printStackTrace();
-//        }
     }
 
 

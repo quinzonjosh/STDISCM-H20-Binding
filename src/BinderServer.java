@@ -12,8 +12,6 @@ import java.util.concurrent.*;
 
 public class BinderServer {
     private ServerSocket serverSocket;
-    private DataInputStream dis;
-    private DataOutputStream dos;
     private BlockingQueue<Element> hydrogenQueue = new LinkedBlockingQueue<>();
     private BlockingQueue<Element> oxygenQueue = new LinkedBlockingQueue<>();
 
@@ -21,7 +19,7 @@ public class BinderServer {
 
     private static final int MAX_OXYGEN_TO_BOND = 1;
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS");
 
     public static void main(String[] args) {
         int SERVER_PORT = 4999;

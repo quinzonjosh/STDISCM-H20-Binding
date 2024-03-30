@@ -16,7 +16,7 @@ public class OxygenClient {
     public static final int NTHREADS = 8;
     private int SERVER_PORT;
     private String SERVER_ADDRESS;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS");
 
     private final BlockingQueue<Interval> intervals = new LinkedBlockingQueue<>();
 
