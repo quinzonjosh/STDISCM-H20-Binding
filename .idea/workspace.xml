@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="95c22252-1efb-4cea-9225-7d3e3978e228" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Interval.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/HydrogenClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/HydrogenClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/OxygenClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/OxygenClient.java" afterDir="false" />
@@ -35,11 +37,12 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.BinderServer.executor": "Debug",
-    "Application.HydrogenClient.executor": "Debug",
+    "Application.BinderServer.executor": "Run",
+    "Application.HydrogenClient.executor": "Run",
     "Application.OxygenClient.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "cy-dev",
     "kotlin-language-version-configured": "true",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -48,7 +51,7 @@
     "project.structure.side.proportion": "0.0"
   }
 }]]></component>
-  <component name="RunManager" selected="Application.HydrogenClient">
+  <component name="RunManager" selected="Application.OxygenClient">
     <configuration name="BinderServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="BinderServer" />
       <module name="STDISCM-H20-Binder" />
@@ -77,9 +80,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.OxygenClient" />
         <item itemvalue="Application.HydrogenClient" />
         <item itemvalue="Application.BinderServer" />
-        <item itemvalue="Application.OxygenClient" />
       </list>
     </recent_temporary>
   </component>
@@ -95,118 +98,12 @@
     <servers />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>122</line>
-          <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>124</line>
-          <option name="timeStamp" value="45" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>126</line>
-          <option name="timeStamp" value="46" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>128</line>
-          <option name="timeStamp" value="48" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>161</line>
-          <option name="timeStamp" value="50" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>162</line>
-          <option name="timeStamp" value="51" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>164</line>
-          <option name="timeStamp" value="52" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>165</line>
-          <option name="timeStamp" value="53" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>166</line>
-          <option name="timeStamp" value="54" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>167</line>
-          <option name="timeStamp" value="55" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>52</line>
-          <option name="timeStamp" value="56" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>53</line>
-          <option name="timeStamp" value="57" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>76</line>
-          <option name="timeStamp" value="59" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>60</line>
-          <option name="timeStamp" value="66" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>61</line>
-          <option name="timeStamp" value="67" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>63</line>
-          <option name="timeStamp" value="68" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>64</line>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>55</line>
-          <option name="timeStamp" value="70" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>72</line>
-          <option name="timeStamp" value="71" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/HydrogenClient.java</url>
-          <line>86</line>
-          <option name="timeStamp" value="72" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/src/BinderServer.java</url>
-          <line>160</line>
-          <properties class="BinderServer.ClientHandler" method="handleHydrogenClient">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="49" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="HydrogenClient$DataSender" memberName="start" />
+        <PinnedItemInfo parentTag="HydrogenClient$DataSender" memberName="end" />
+        <PinnedItemInfo parentTag="java.io.DataOutputStream" memberName="bytearr" />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
 </project>

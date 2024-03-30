@@ -18,6 +18,11 @@ public class OxygenClient {
     private String SERVER_ADDRESS;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
 
+    private final BlockingQueue<Interval> intervals = new LinkedBlockingQueue<>();
+
+    private List<Thread> threads = new ArrayList<>();
+
+
     public OxygenClient(String SERVER_ADDRESS, int SERVER_PORT) {
         this.SERVER_ADDRESS = SERVER_ADDRESS;
         this.SERVER_PORT = SERVER_PORT;
@@ -67,19 +72,78 @@ public class OxygenClient {
 
     private void sendOxygenMolecules() {
         int batch = oxygenCount / NTHREADS;
-        ExecutorService executorService = Executors.newFixedThreadPool(NTHREADS);
+
+
+        for (int i = 0; i < NTHREADS; i++) {
+            Thread thread = new Thread(new DataSender(intervals));
+            threads.add(thread);
+            thread.start();
+        }
 
         try {
             dos.writeUTF("Oxygen");
-
-            for(int i = 0; i < NTHREADS; i++) {
+            for (int i = 0; i < NTHREADS; i++) {
                 final int start = i * batch;
                 final int end = (i == NTHREADS - 1) ? oxygenCount : (i + 1) * batch;
 
-                System.out.printf("(%d, %d)%n", start, end);
+                synchronized (intervals) {
+                    intervals.offer(new Interval(start, end, false));
+                    intervals.notifyAll();
+                }
+            }
 
-                executorService.submit(() -> {
-                    for(int j = start; j < end; j++){
+            synchronized (intervals) {
+                intervals.offer(new Interval(-1, -1, true));
+                intervals.notifyAll();
+            }
+
+            for (Thread thread : threads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    // Handle InterruptedException
+                    e.printStackTrace();
+                }
+            }
+
+            dos.writeUTF("DONE");
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private class DataSender implements Runnable{
+
+        private final BlockingQueue<Interval> intervals;
+
+        public DataSender(BlockingQueue<Interval> intervals) {
+            this.intervals = intervals;
+        }
+
+        @Override
+        public void run() {
+            synchronized (intervals) {
+                while (true) {
+                    while (intervals.isEmpty()) {
+                        try {
+                            intervals.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
+                    Interval interval = intervals.poll();
+                    assert interval != null;
+
+                    if (interval.isLast()) {
+                        synchronized (intervals) {
+                            intervals.offer(interval);
+                            intervals.notifyAll();
+                        }
+                        break;
+                    }
+
+                    for(int j = interval.getStart(); j < interval.getEnd(); j++){
                         try {
                             String element = "O"+j;
                             dos.writeUTF(element);
@@ -90,28 +154,8 @@ public class OxygenClient {
                             throw new RuntimeException(e);
                         }
                     }
-                });
+                }
             }
-
-            executorService.shutdown();
-
-            // Wait indefinitely for all tasks to complete
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                // (Re-)Cancel if current thread also interrupted
-                executorService.shutdownNow();
-                // Preserve interrupt status
-                Thread.currentThread().interrupt();
-            }
-
-
-            dos.writeUTF("DONE");
-            dos.flush();
-//            dos.close();
-        } catch (IOException e){
-            e.printStackTrace();
         }
     }
 

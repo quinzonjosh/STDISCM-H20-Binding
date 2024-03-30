@@ -16,6 +16,11 @@ public class HydrogenClient {
     private int SERVER_PORT;
     private String SERVER_ADDRESS;
     public static final int NTHREADS = 8;
+
+    private final BlockingQueue<Interval> intervals = new LinkedBlockingQueue<>();
+
+    private List<Thread> threads = new ArrayList<>();
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
     public HydrogenClient(String SERVER_ADDRESS, int SERVER_PORT){
         this.SERVER_ADDRESS = SERVER_ADDRESS;
@@ -44,19 +49,128 @@ public class HydrogenClient {
 
     private void sendHydrogenMolecules() {
         int batch = hydrogenCount / NTHREADS;
-        ExecutorService executorService = Executors.newFixedThreadPool(NTHREADS);
+
+
+        for (int i = 0; i < NTHREADS; i++) {
+            Thread thread = new Thread(new DataSender(intervals));
+            threads.add(thread);
+            thread.start();
+        }
 
         try {
             dos.writeUTF("Hydrogen");
-
-            for(int i = 0; i < NTHREADS; i++) {
+            for (int i = 0; i < NTHREADS; i++) {
                 final int start = i * batch;
                 final int end = (i == NTHREADS - 1) ? hydrogenCount : (i + 1) * batch;
 
-                System.out.printf("(%d, %d)%n", start, end);
+                synchronized (intervals) {
+                    intervals.offer(new Interval(start, end, false));
+                    intervals.notifyAll();
+                }
+            }
 
-                executorService.submit(() -> {
-                    for(int j = start; j < end; j++){
+            synchronized (intervals) {
+                intervals.offer(new Interval(-1, -1, true));
+                intervals.notifyAll();
+            }
+
+            for (Thread thread : threads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    // Handle InterruptedException
+                    e.printStackTrace();
+                }
+            }
+
+            dos.writeUTF("DONE");
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+
+
+//        ExecutorService executorService = Executors.newFixedThreadPool(NTHREADS);
+
+//        try {
+//            dos.writeUTF("Hydrogen");
+//
+//            for(int i = 0; i < NTHREADS; i++) {
+//                final int start = i * batch;
+//                final int end = (i == NTHREADS - 1) ? hydrogenCount : (i + 1) * batch;
+//
+//                System.out.printf("(%d, %d)%n", start, end);
+//
+//                executorService.submit(() -> {
+//                    for(int j = start; j < end; j++){
+//                        try {
+//                            String element = "H"+j;
+//                            dos.writeUTF(element);
+////                            dos.flush();
+//                            String log = element + ", requested, " + LocalDateTime.now().format(FORMATTER);
+//                            System.out.println(log);
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
+//                });
+//            }
+//
+//            executorService.shutdown();
+//
+//            // Wait indefinitely for all tasks to complete
+//            try {
+//                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//                // (Re-)Cancel if current thread also interrupted
+//                executorService.shutdownNow();
+//                // Preserve interrupt status
+//                Thread.currentThread().interrupt();
+//            }
+//
+//
+//            dos.writeUTF("DONE");
+//            dos.flush();
+////            dos.close();
+//        } catch (IOException e){
+//            e.printStackTrace();
+//        }
+    }
+
+
+    private class DataSender implements Runnable{
+
+        private final BlockingQueue<Interval> intervals;
+
+        public DataSender(BlockingQueue<Interval> intervals) {
+            this.intervals = intervals;
+        }
+
+        @Override
+        public void run() {
+            synchronized (intervals) {
+                while (true) {
+                    while (intervals.isEmpty()) {
+                        try {
+                            intervals.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
+                    Interval interval = intervals.poll();
+                    assert interval != null;
+
+                    if (interval.isLast()) {
+                        synchronized (intervals) {
+                            intervals.offer(interval);
+                            intervals.notifyAll();
+                        }
+                        break;
+                    }
+
+                    for(int j = interval.getStart(); j < interval.getEnd(); j++){
                         try {
                             String element = "H"+j;
                             dos.writeUTF(element);
@@ -67,28 +181,8 @@ public class HydrogenClient {
                             throw new RuntimeException(e);
                         }
                     }
-                });
+                }
             }
-
-            executorService.shutdown();
-
-            // Wait indefinitely for all tasks to complete
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                // (Re-)Cancel if current thread also interrupted
-                executorService.shutdownNow();
-                // Preserve interrupt status
-                Thread.currentThread().interrupt();
-            }
-
-
-            dos.writeUTF("DONE");
-            dos.flush();
-//            dos.close();
-        } catch (IOException e){
-            e.printStackTrace();
         }
     }
 
