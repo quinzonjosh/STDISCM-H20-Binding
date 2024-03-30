@@ -1,136 +1,115 @@
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class BinderServer {
-
-    private static final ExecutorService clientExecutor = Executors.newCachedThreadPool();
-//    private static final ExecutorService slaveExecutor = Executors.newCachedThreadPool();
-//    private static final List<SlaveInfo> slaves = new CopyOnWriteArrayList<>();
-    private static final int BINDER_SERVER_PORT = 4999;
-
-    private static final int CLIENT_PORT = 4999;
-//    private static final int SLAVE_REGISTRATION_PORT = 5001;
-    private static BlockingQueue<Element> hydrogenQueue = new LinkedBlockingQueue<>();
-    private static BlockingQueue<Element> oxygenQueue = new LinkedBlockingQueue<>();
-
-    private static final int MAX_HYDROGEN_TO_BOND = 2;
-
-    private static final int MAX_OXYGEN_TO_BOND = 1;
-
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
+    private ServerSocket serverSocket;
+    private DataInputStream dis;
+    private DataOutputStream dos;
+    private BlockingQueue<String> hydrogenQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<String> oxygenQueue = new LinkedBlockingQueue<>();
 
     public static void main(String[] args) {
-        // Separate thread for listening to slave server registrations
-        Thread bindingThread = new Thread(BinderServer::checkBond);
-        bindingThread.start();
-
-        // declare a server socket host
-        try (ServerSocket serverSocket = new ServerSocket(CLIENT_PORT)) {
-            System.out.println("Master Server Listening for clients on port " + CLIENT_PORT);
-            // continuously listen for client requests
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                clientExecutor.submit(() -> handleClient(clientSocket));
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            clientExecutor.shutdown();
-//            slaveExecutor.shutdown();
-        }
-
+        int SERVER_PORT = 4999;
+        BinderServer binderServer = new BinderServer(SERVER_PORT);
+        binderServer.start();
     }
 
-    private static void checkBond() {
-        while (true){
-            if (hydrogenQueue.size() >= MAX_HYDROGEN_TO_BOND && oxygenQueue.size() >= MAX_OXYGEN_TO_BOND){
-
-                List<Element> elements = new ArrayList<>();
-                elements.add(hydrogenQueue.poll());
-                elements.add(hydrogenQueue.poll());
-                elements.add(oxygenQueue.poll());
-
-                bond(elements);
-            }
+    public BinderServer(int port){
+        try {
+            this.serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static void bond(List<Element> elements) {
-        elements.forEach(element -> {
+    private void start() {
+        System.out.println("Server is running & listening for connections...");
+        while(true){
             try {
-                DataOutputStream dos = new DataOutputStream(element.getClientOutputStream());
-                String log = element.getElement() + ", bonded, " + LocalDateTime.now().format(FORMATTER);
-                System.out.println("Server: " + log);
-                dos.writeUTF(log);
-            }catch (IOException e){
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Client " + clientSocket + " connected");
+
+                Thread clientHandler = new Thread(new ClientHandler(clientSocket));
+                clientHandler.start();
+            } catch (IOException e){
                 e.printStackTrace();
             }
-        });
+        }
     }
 
+    private void sanityCheck() {
+        System.out.println("hydrogen queue: " + hydrogenQueue);
+        System.out.println("Oxygen queue: " + oxygenQueue);
+    }
 
-    private static void handleClient(Socket clientSocket) {
+    private class ClientHandler implements Runnable{
+        private Socket clientSocket;
+        private DataInputStream dis;
+        private DataOutputStream dos;
 
+        public ClientHandler(Socket clientSocket){
+            this.clientSocket = clientSocket;
+        }
 
-        try{
-            //setup writer & reader
-            DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
-
-            // acquire data from client
-            String type = dis.readUTF(); // to check whether oxygen or hydrogen client
-
-            if(type.equals("Oxygen")){
-                while (true){
-                    String element = dis.readUTF();
-                    oxygenQueue.add(new Element(clientSocket.getOutputStream(), element));
-                }
-            }
-            else {
-                while (true){
-                    String element = dis.readUTF();
-                    hydrogenQueue.add(new Element(clientSocket.getOutputStream(), element));
-                }
-            }
-
-
-            //adding data
-            /* while true
-            * 1. If type == 'Oxygen' add to oxygenqueue  --> needed of executor
-            * 2. If type == 'Hydrogen' add to hydrogenqueue --> needed of executor
-            *
-            * while true --> in another thread
-            * bonding
-            *
-            *
-            *
-            *
-            * */
-            // bonding
-            //
-
-        } catch (IOException e){
-            System.err.println("Error handling client: " + clientSocket);
-            e.printStackTrace();
-        } finally {
+        @Override
+        public void run(){
             try {
-                clientSocket.close();
+                this.dis = new DataInputStream(clientSocket.getInputStream());
+                this.dos = new DataOutputStream(clientSocket.getOutputStream());
+
+                String clientType = dis.readUTF();
+
+                switch (clientType) {
+                    case "Hydrogen":
+                        handleHydrogenClient();
+                        break;
+                    case "Oxygen":
+                        handleOxygenClient();
+                        break;
+                    default:
+                        System.out.println("Unknown client type");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
+        private void handleOxygenClient() throws IOException {
+            while (true) {
+                String molecule = dis.readUTF();
+                if (molecule.equals("DONE")) {
+                    break;
+                } else {
+                    oxygenQueue.offer(molecule);
+                }
+            }
+            sanityCheck();
+        }
 
+        private void handleHydrogenClient() throws IOException {
+            while (true) {
+                String molecule = dis.readUTF();
+                if (molecule.equals("DONE")) {
+                    break;
+                } else {
+                    hydrogenQueue.offer(molecule);
+                }
+            }
+            sanityCheck();
+        }
     }
-
-
 
 
 }
-
-
