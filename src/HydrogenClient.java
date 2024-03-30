@@ -2,13 +2,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class HydrogenClient {
     public static int hydrogenCount;
@@ -17,6 +16,7 @@ public class HydrogenClient {
     private int SERVER_PORT;
     private String SERVER_ADDRESS;
     public static final int NTHREADS = 8;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss");
     public HydrogenClient(String SERVER_ADDRESS, int SERVER_PORT){
         this.SERVER_ADDRESS = SERVER_ADDRESS;
         this.SERVER_PORT = SERVER_PORT;
@@ -28,6 +28,11 @@ public class HydrogenClient {
             System.out.println("Connected to server.");
 
             this.dos = new DataOutputStream(serverSocket.getOutputStream());
+            this.dis = new DataInputStream(serverSocket.getInputStream());
+
+            Thread serverListener = new Thread(new ServerMessageReceiver(dis));
+            serverListener.start();
+
 
             getUserInput();
             sendHydrogenMolecules();
@@ -38,20 +43,77 @@ public class HydrogenClient {
     }
 
     private void sendHydrogenMolecules() {
+        int batch = hydrogenCount / NTHREADS;
+        ExecutorService executorService = Executors.newFixedThreadPool(NTHREADS);
+
         try {
             dos.writeUTF("Hydrogen");
 
-            for (int i=0; i<hydrogenCount; i++){
-                dos.writeUTF("H"+i);
-                dos.flush();
+            for(int i = 0; i < NTHREADS; i++) {
+                final int start = i * batch;
+                final int end = (i == NTHREADS - 1) ? hydrogenCount : (i + 1) * batch;
+
+                executorService.submit(() -> {
+                    for(int j = start; j < end; j++){
+                        try {
+                            String element = "H"+j;
+                            dos.writeUTF(element);
+//                            dos.flush();
+                            String log = element + ", requested, " + LocalDateTime.now().format(FORMATTER);
+                            System.out.println(log);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
             }
+
+
+            // Wait indefinitely for all tasks to complete
+            try {
+                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                // (Re-)Cancel if current thread also interrupted
+                executorService.shutdownNow();
+                // Preserve interrupt status
+                Thread.currentThread().interrupt();
+            }
+
+
             dos.writeUTF("DONE");
             dos.flush();
-            dos.close();
+//            dos.close();
         } catch (IOException e){
             e.printStackTrace();
         }
     }
+
+
+    private static class ServerMessageReceiver implements Runnable{
+
+        private DataInputStream dis;
+
+        public ServerMessageReceiver(DataInputStream dis) {
+            this.dis = dis;
+        }
+
+        @Override
+        public void run() {
+            while (true){
+                try {
+                    String log = dis.readUTF();
+                    System.out.println("From Server: " + log);
+                } catch (IOException e){
+                    e.printStackTrace();
+                    break;
+                }
+            }
+
+        }
+    }
+
+
 
 //    private void sendHydrogenMolecules() {
 //        int batch = hydrogenCount / NTHREADS;

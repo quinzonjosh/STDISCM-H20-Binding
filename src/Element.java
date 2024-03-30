@@ -4,17 +4,17 @@ import java.net.Socket;
 
 public class Element {
 
-    private OutputStream clientOutputStream;
+    private Socket clientSocket;
     private String element;
 
 
-    public Element(OutputStream clientOutputStream, String element) {
-        this.clientOutputStream = clientOutputStream;
+    public Element(Socket clientSocket, String element) {
+        this.clientSocket = clientSocket;
         this.element = element;
     }
 
-    public OutputStream getClientOutputStream() {
-        return clientOutputStream;
+    public Socket getClientSocket() {
+        return clientSocket;
     }
 
     public String getElement() {
