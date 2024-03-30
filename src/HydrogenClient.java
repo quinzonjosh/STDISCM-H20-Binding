@@ -53,6 +53,8 @@ public class HydrogenClient {
                 final int start = i * batch;
                 final int end = (i == NTHREADS - 1) ? hydrogenCount : (i + 1) * batch;
 
+                System.out.printf("(%d, %d)%n", start, end);
+
                 executorService.submit(() -> {
                     for(int j = start; j < end; j++){
                         try {
@@ -68,6 +70,7 @@ public class HydrogenClient {
                 });
             }
 
+            executorService.shutdown();
 
             // Wait indefinitely for all tasks to complete
             try {

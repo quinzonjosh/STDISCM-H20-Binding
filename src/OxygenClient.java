@@ -76,12 +76,14 @@ public class OxygenClient {
                 final int start = i * batch;
                 final int end = (i == NTHREADS - 1) ? oxygenCount : (i + 1) * batch;
 
+                System.out.printf("(%d, %d)%n", start, end);
+
                 executorService.submit(() -> {
                     for(int j = start; j < end; j++){
                         try {
                             String element = "O"+j;
                             dos.writeUTF(element);
-                            dos.flush();
+//                            dos.flush();
                             String log = element + ", requested, " + LocalDateTime.now().format(FORMATTER);
                             System.out.println(log);
                         } catch (IOException e) {
@@ -90,6 +92,8 @@ public class OxygenClient {
                     }
                 });
             }
+
+            executorService.shutdown();
 
             // Wait indefinitely for all tasks to complete
             try {
@@ -104,6 +108,7 @@ public class OxygenClient {
 
 
             dos.writeUTF("DONE");
+            dos.flush();
 //            dos.close();
         } catch (IOException e){
             e.printStackTrace();
