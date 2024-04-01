@@ -40,7 +40,7 @@ public class BinderServer {
 
     public void reportSanityCheckStatus() {
         int expectedBondCount = correctBondCount();
-        System.out.println("--- SANITY CHECK STATUS ---");
+        System.out.println("--- SANITY CHECK: BindingServer ---");
         System.out.println("Errors identified: " + errorCount.get());
         System.out.println(requestedElements.isEmpty() && bondedElements.size() == expectedBondCount ? "All bonds are correct and accounted for." : "There are discrepancies in bonds.");
 
