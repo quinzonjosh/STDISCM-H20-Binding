@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HydrogenClient {
     public static int hydrogenCount;
@@ -49,7 +51,6 @@ public class HydrogenClient {
 
     private void sendHydrogenMolecules() {
         int batch = hydrogenCount / NTHREADS;
-
 
         for (int i = 0; i < NTHREADS; i++) {
             Thread thread = new Thread(new DataSender(intervals));
@@ -152,6 +153,16 @@ public class HydrogenClient {
                 try {
                     String log = dis.readUTF();
                     System.out.println("From Server: " + log);
+
+                    Pattern pattern = Pattern.compile("H(\\d+)");
+                    Matcher matcher = pattern.matcher(log);
+
+                    if (matcher.find()) {
+                        String number = matcher.group(1);
+                        if(Integer.parseInt(number) == hydrogenCount - 1){
+                            System.exit(0);
+                        }
+                    }
                 } catch (IOException e){
                     e.printStackTrace();
                     break;

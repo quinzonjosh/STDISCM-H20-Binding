@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OxygenClient {
     public static int oxygenCount;
@@ -19,9 +21,7 @@ public class OxygenClient {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS");
 
     private final BlockingQueue<Interval> intervals = new LinkedBlockingQueue<>();
-
     private List<Thread> threads = new ArrayList<>();
-
 
     public OxygenClient(String SERVER_ADDRESS, int SERVER_PORT) {
         this.SERVER_ADDRESS = SERVER_ADDRESS;
@@ -61,6 +61,16 @@ public class OxygenClient {
                 try {
                     String log = dis.readUTF();
                     System.out.println("From Server: " + log);
+
+                    Pattern pattern = Pattern.compile("O(\\d+)");
+                    Matcher matcher = pattern.matcher(log);
+
+                    if (matcher.find()) {
+                        String number = matcher.group(1);
+                        if(Integer.parseInt(number) == oxygenCount - 1){
+                            System.exit(0);
+                        }
+                    }
                 } catch (IOException e){
                     e.printStackTrace();
                     break;

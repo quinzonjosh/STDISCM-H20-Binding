@@ -16,7 +16,6 @@ public class BinderServer {
     private BlockingQueue<Element> oxygenQueue = new LinkedBlockingQueue<>();
 
     private static final int MAX_HYDROGEN_TO_BOND = 2;
-
     private static final int MAX_OXYGEN_TO_BOND = 1;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS");
@@ -100,6 +99,9 @@ public class BinderServer {
                     String log = element.getElement() + ", bonded, " + LocalDateTime.now().format(FORMATTER);
                     System.out.println("Server: " + log);
                     dos.writeUTF(log);
+
+
+
                 }catch (IOException e){
                     e.printStackTrace();
                 }
@@ -153,7 +155,7 @@ public class BinderServer {
                     oxygenQueue.offer(new Element(clientSocket, molecule));
                 }
             }
-            sanityCheck();
+//            sanityCheck();
         }
 
         private void handleHydrogenClient() throws IOException {
@@ -165,7 +167,7 @@ public class BinderServer {
                     hydrogenQueue.offer(new Element(clientSocket, molecule));
                 }
             }
-            sanityCheck();
+//            sanityCheck();
         }
     }
 
