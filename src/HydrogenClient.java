@@ -180,6 +180,8 @@ public class HydrogenClient {
                             } else {
                                 System.out.println("Mismatch between sent requests and confirmed bonds.");
                             }
+                            System.out.println("No. of sent requests: " + sentRequests.size());
+                            System.out.println(("No. of confirmed bonds: " + confirmedBonds.size()));
                             System.exit(0);
                         }
                     }
