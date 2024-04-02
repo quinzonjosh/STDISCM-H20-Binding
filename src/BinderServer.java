@@ -165,7 +165,7 @@ public class BinderServer {
                         bond(elements);
                         lastBondConfirmationTime = System.currentTimeMillis();
                         // After bonding, update sets
-                        elements.forEach(e -> {  // TODO: dbl check if this ensures that there are no duplicate requests or bond confirmations.
+                        elements.forEach(e -> {
                             requestedElements.remove(e.getElement());
                             bondedElements.add(e.getElement());
                         });
