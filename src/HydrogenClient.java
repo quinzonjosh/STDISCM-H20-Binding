@@ -7,7 +7,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HydrogenClient {
     public static int hydrogenCount;
@@ -22,6 +25,10 @@ public class HydrogenClient {
     private List<Thread> threads = new ArrayList<>();
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS");
+
+    private Set<String> sentRequests = ConcurrentHashMap.newKeySet();
+    private Set<String> confirmedBonds = ConcurrentHashMap.newKeySet();
+
     public HydrogenClient(String SERVER_ADDRESS, int SERVER_PORT){
         this.SERVER_ADDRESS = SERVER_ADDRESS;
         this.SERVER_PORT = SERVER_PORT;
@@ -49,7 +56,6 @@ public class HydrogenClient {
 
     private void sendHydrogenMolecules() {
         int batch = hydrogenCount / NTHREADS;
-
 
         for (int i = 0; i < NTHREADS; i++) {
             Thread thread = new Thread(new DataSender(intervals));
@@ -124,6 +130,7 @@ public class HydrogenClient {
                     for(int j = interval.getStart(); j < interval.getEnd(); j++){
                         try {
                             String element = "H"+j;
+                            sentRequests.add(element);
                             dos.writeUTF(element);
 //                            dos.flush();
                             String log = element + ", requested, " + LocalDateTime.now().format(FORMATTER);
@@ -138,7 +145,7 @@ public class HydrogenClient {
     }
 
 
-    private static class ServerMessageReceiver implements Runnable{
+    private class ServerMessageReceiver implements Runnable{
 
         private DataInputStream dis;
 
@@ -152,6 +159,32 @@ public class HydrogenClient {
                 try {
                     String log = dis.readUTF();
                     System.out.println("From Server: " + log);
+
+                    Pattern pattern = Pattern.compile("H(\\d+)");
+                    Matcher matcher = pattern.matcher(log);
+
+                    if (matcher.find()) {
+                        String number = matcher.group(1);
+                        String elementId = matcher.group(0);
+                        if(sentRequests.contains(elementId) && !confirmedBonds.contains(elementId)) {
+                            confirmedBonds.add(elementId); // Validate and track confirmation
+//                            System.out.println("Confirmed bonding for: " + elementId);
+                        } else {
+                            // Log error due to duplicate or premature confirmation
+                            System.out.println("Error: Duplicate or premature bond confirmation received for " + elementId);
+                        }
+                        if(Integer.parseInt(number) == hydrogenCount - 1){
+                            System.out.println("--- SANITY CHECK: HydrogenClient ---");
+                            if(sentRequests.equals(confirmedBonds)) {
+                                System.out.println("All sent requests were confirmed correctly.");
+                            } else {
+                                System.out.println("Mismatch between sent requests and confirmed bonds.");
+                            }
+                            System.out.println("No. of sent requests: " + sentRequests.size());
+                            System.out.println(("No. of confirmed bonds: " + confirmedBonds.size()));
+                            System.exit(0);
+                        }
+                    }
                 } catch (IOException e){
                     e.printStackTrace();
                     break;
