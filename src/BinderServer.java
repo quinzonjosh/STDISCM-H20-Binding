@@ -32,6 +32,10 @@ public class BinderServer {
 
     private AtomicInteger expectedBondCount = new AtomicInteger(0);
 
+    private List<Long> timeList = new ArrayList<>();
+
+    private long lastBondConfirmationTime = Long.MAX_VALUE;
+
     public static void main(String[] args) {
         int SERVER_PORT = 4999;
         BinderServer binderServer = new BinderServer(SERVER_PORT);
@@ -57,6 +61,10 @@ public class BinderServer {
         System.out.println("Expected bond count: " + expectedBondCount.get());
         System.out.println("All bond requests accounted for: " + requestedElements.isEmpty());
         System.out.println("No. of bonded elements: " + bondedElements.size());
+
+        long earliestRequestTime = timeList.stream().min(Long::compare).orElse(0L);
+        long elapsedTime = lastBondConfirmationTime - earliestRequestTime;
+        System.out.println("Elapsed Time: " + elapsedTime);
     }
 
     public void correctBondCount() {
@@ -88,7 +96,6 @@ public class BinderServer {
                 try {
                     if(users.get() < 2){
                         Socket clientSocket = serverSocket.accept();
-                        //add start time in a list
 
                         System.out.println("Client " + clientSocket + " connected");
                         Thread clientHandler = new Thread(new ClientHandler(clientSocket));
@@ -156,7 +163,7 @@ public class BinderServer {
                     if (elements.stream().allMatch(e -> requestedElements.contains(e.getElement()))) {
                         // Proceed with bonding
                         bond(elements);
-
+                        lastBondConfirmationTime = System.currentTimeMillis();
                         // After bonding, update sets
                         elements.forEach(e -> {  // TODO: dbl check if this ensures that there are no duplicate requests or bond confirmations.
                             requestedElements.remove(e.getElement());
@@ -254,6 +261,8 @@ public class BinderServer {
             correctBondCount();
             System.out.println("OxygenCount: " + oxygenCount.get());
             //add time to time list
+            long requestTime = System.currentTimeMillis();
+            timeList.add(requestTime);
             while (true) {
                 String molecule = dis.readUTF();
                 if (molecule.equals("DONE")) {
@@ -271,6 +280,8 @@ public class BinderServer {
             correctBondCount();
             System.out.println("HydrogenCount: " + hydrogenCount.get());
             //add time to time list
+            long requestTime = System.currentTimeMillis();
+            timeList.add(requestTime);
             while (true) {
                 String molecule = dis.readUTF();
                 if (molecule.equals("DONE")) {

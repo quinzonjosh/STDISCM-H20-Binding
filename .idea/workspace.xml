@@ -7,8 +7,6 @@
     <list default="true" id="95c22252-1efb-4cea-9225-7d3e3978e228" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BinderServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/BinderServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/HydrogenClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/HydrogenClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/OxygenClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/OxygenClient.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,12 +41,16 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "extract.method.default.visibility": "private",
-    "git-widget-placeholder": "cy-dev",
+    "git-widget-placeholder": "develop",
     "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0"
+    "project.structure.side.proportion": "0.0",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RunManager" selected="Application.OxygenClient">
@@ -86,6 +88,13 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-17.0.10-corretto-17.0.10-f644763e9732-24582b8d" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -94,8 +103,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1709872110202</updated>
+      <workItem from="1712055789864" duration="2650000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
