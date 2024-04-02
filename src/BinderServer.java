@@ -22,41 +22,60 @@ public class BinderServer {
     private Set<String> requestedElements = Collections.synchronizedSet(new HashSet<>());
     private Set<String> bondedElements = Collections.synchronizedSet(new HashSet<>());
     private AtomicInteger errorCount = new AtomicInteger();
+    private AtomicInteger users = new AtomicInteger(0);
 
-    private AtomicInteger totalHydrogenReceived = new AtomicInteger(0);
-    private AtomicInteger totalOxygenReceived = new AtomicInteger(0);
+//    private AtomicInteger totalHydrogenReceived = new AtomicInteger(0);
+//    private AtomicInteger totalOxygenReceived = new AtomicInteger(0);
+
+    private AtomicInteger hydrogenCount = new AtomicInteger(0);
+    private AtomicInteger oxygenCount = new AtomicInteger(0);
+
+    private AtomicInteger expectedBondCount = new AtomicInteger(0);
+
+    private List<Long> timeList = new ArrayList<>();
+
+    private long lastBondConfirmationTime = Long.MAX_VALUE;
 
     public static void main(String[] args) {
         int SERVER_PORT = 4999;
         BinderServer binderServer = new BinderServer(SERVER_PORT);
 
         // Adding a shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            binderServer.reportSanityCheckStatus();
-        }));
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            binderServer.reportSanityCheckStatus();
+//        }));
 
         binderServer.start();
     }
 
     public void reportSanityCheckStatus() {
-        int expectedBondCount = correctBondCount();
+
+        //check which start time is the earliest
+
+
+//        int expectedBondCount = correctBondCount();
         System.out.println("--- SANITY CHECK: BindingServer ---");
         System.out.println("Errors identified: " + errorCount.get());
-        System.out.println(requestedElements.isEmpty() && bondedElements.size() == expectedBondCount ? "All bonds are correct and accounted for." : "There are discrepancies in bonds.");
+        System.out.println(requestedElements.isEmpty() && bondedElements.size() == expectedBondCount.get() ? "All bonds are correct and accounted for." : "There are discrepancies in bonds.");
 
-        System.out.println("Expected bond count: " + expectedBondCount);
+        System.out.println("Expected bond count: " + expectedBondCount.get());
         System.out.println("All bond requests accounted for: " + requestedElements.isEmpty());
         System.out.println("No. of bonded elements: " + bondedElements.size());
+
+        long earliestRequestTime = timeList.stream().min(Long::compare).orElse(0L);
+        long elapsedTime = lastBondConfirmationTime - earliestRequestTime;
+        System.out.println("Elapsed Time: " + elapsedTime);
     }
 
-    public int correctBondCount() {
-        int hydrogenAtoms = totalHydrogenReceived.get();
-        int oxygenAtoms = totalOxygenReceived.get();
+    public void correctBondCount() {
+        int hydrogenAtoms = hydrogenCount.get();
+        int oxygenAtoms = oxygenCount.get();
 
-        // Calculate how many full H2O molecules can be formed
-        int totalPossibleMolecules = Math.min(hydrogenAtoms / 2, oxygenAtoms);
-
-        return totalPossibleMolecules * 3; // Total atoms involved in bonding
+        if (hydrogenAtoms != 0 && oxygenAtoms != 0){
+            // Calculate how many full H2O molecules can be formed
+            int totalPossibleMolecules = Math.min(hydrogenAtoms / 2, oxygenAtoms);
+            expectedBondCount.set(totalPossibleMolecules * 3); // Total atoms involved in bonding
+        }
     }
 
     public BinderServer(int port){
@@ -69,24 +88,44 @@ public class BinderServer {
 
     private void start() {
         System.out.println("Server is running & listening for connections...");
+        List<Thread> threads = new ArrayList<>();
 
+
+        Thread connectingThread = new Thread(() -> {
+            while(true){
+                try {
+                    if(users.get() < 2){
+                        Socket clientSocket = serverSocket.accept();
+
+                        System.out.println("Client " + clientSocket + " connected");
+                        Thread clientHandler = new Thread(new ClientHandler(clientSocket));
+                        clientHandler.start();
+
+                        users.incrementAndGet();
+                    }
+                    else break;
+                } catch (IOException e){
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        });
+        threads.add(connectingThread);
+        connectingThread.start();
 
         Thread bindingThread = new Thread(new BindingHandler(hydrogenQueue, oxygenQueue));
+        threads.add(bindingThread);
         bindingThread.start();
 
-        while(true){
+        for (Thread thread : threads) {
             try {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Client " + clientSocket + " connected");
-                Thread clientHandler = new Thread(new ClientHandler(clientSocket));
-                clientHandler.start();
-            } catch (IOException e){
-                e.printStackTrace();
-                break;
+                thread.join();
+            } catch (InterruptedException e) {
+                // Restore interrupted status
+                Thread.currentThread().interrupt(); // Restore the interrupted status
+                System.err.println("Thread interrupted while waiting for completion: " + e.getMessage());
             }
         }
-
-
 
     }
 
@@ -124,7 +163,7 @@ public class BinderServer {
                     if (elements.stream().allMatch(e -> requestedElements.contains(e.getElement()))) {
                         // Proceed with bonding
                         bond(elements);
-
+                        lastBondConfirmationTime = System.currentTimeMillis();
                         // After bonding, update sets
                         elements.forEach(e -> {  // TODO: dbl check if this ensures that there are no duplicate requests or bond confirmations.
                             requestedElements.remove(e.getElement());
@@ -134,6 +173,32 @@ public class BinderServer {
                         // Log or handle error: Attempted to bond without all elements having sent requests
                         errorCount.incrementAndGet();
                     }
+
+//                    System.out.println("BondSize: " + bondedElements.size());
+//                    System.out.println("RequestedElements: " + requestedElements.size());
+//                    System.out.println("ExpectedBound: " + expectedBondCount.get());
+                }
+                else if (bondedElements.size() == expectedBondCount.get() && expectedBondCount.get() > 0){
+                    hydrogenQueue.forEach( element -> {
+                        try {
+                            DataOutputStream dos = new DataOutputStream(element.getClientSocket().getOutputStream());
+                            dos.writeUTF("DONE");
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    });
+
+                    oxygenQueue.forEach( element -> {
+                        try {
+                            DataOutputStream dos = new DataOutputStream(element.getClientSocket().getOutputStream());
+                            dos.writeUTF("DONE");
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    });
+
+                    reportSanityCheckStatus();
+                    break;
                 }
             }
         }
@@ -169,7 +234,6 @@ public class BinderServer {
                 this.dis = new DataInputStream(clientSocket.getInputStream());
 
                 String clientType = dis.readUTF();
-
                 switch (clientType) {
                     case "Hydrogen":
                         handleHydrogenClient();
@@ -193,26 +257,37 @@ public class BinderServer {
         }
 
         private void handleOxygenClient() throws IOException {
+            oxygenCount.set(dis.readInt());
+            correctBondCount();
+            System.out.println("OxygenCount: " + oxygenCount.get());
+            //add time to time list
+            long requestTime = System.currentTimeMillis();
+            timeList.add(requestTime);
             while (true) {
                 String molecule = dis.readUTF();
                 if (molecule.equals("DONE")) {
                     break;
                 } else {
-                    totalOxygenReceived.incrementAndGet();
+//                    totalOxygenReceived.incrementAndGet();
                     requestedElements.add(molecule);
                     oxygenQueue.offer(new Element(clientSocket, molecule));
                 }
             }
-//            sanityCheck();
         }
 
         private void handleHydrogenClient() throws IOException {
+            hydrogenCount.set(dis.readInt());
+            correctBondCount();
+            System.out.println("HydrogenCount: " + hydrogenCount.get());
+            //add time to time list
+            long requestTime = System.currentTimeMillis();
+            timeList.add(requestTime);
             while (true) {
                 String molecule = dis.readUTF();
                 if (molecule.equals("DONE")) {
                     break;
                 } else {
-                    totalHydrogenReceived.incrementAndGet();
+//                    totalHydrogenReceived.incrementAndGet();
                     requestedElements.add(molecule);
                     hydrogenQueue.offer(new Element(clientSocket, molecule));
                 }

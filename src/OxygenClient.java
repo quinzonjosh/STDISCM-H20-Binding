@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +24,7 @@ public class OxygenClient {
 
     private Set<String> sentRequests = ConcurrentHashMap.newKeySet();
     private Set<String> confirmedBonds = ConcurrentHashMap.newKeySet();
+    private AtomicBoolean isDone = new AtomicBoolean(false);
 
     public OxygenClient(String SERVER_ADDRESS, int SERVER_PORT) {
         this.SERVER_ADDRESS = SERVER_ADDRESS;
@@ -63,40 +62,54 @@ public class OxygenClient {
         public void run() {
             while (true){
                 try {
+
                     String log = dis.readUTF();
-                    System.out.println("From Server: " + log);
 
-                    Pattern pattern = Pattern.compile("O(\\d+)");
-                    Matcher matcher = pattern.matcher(log);
+                    if (log.equals("DONE") && !isDone.get()){
+                        printSanityCheckReport();
+                        isDone.set(true);
+                    }
+                    else{
+                        System.out.println("From Server: " + log);
 
-                    if (matcher.find()) {
-                        String number = matcher.group(1);
-                        String elementId = matcher.group(0);
-                        if(sentRequests.contains(elementId) && !confirmedBonds.contains(elementId)) {
-                            confirmedBonds.add(elementId); // Validate and track confirmation
+                        Pattern pattern = Pattern.compile("O(\\d+)");
+                        Matcher matcher = pattern.matcher(log);
+
+                        if (matcher.find()) {
+                            String number = matcher.group(1);
+                            String elementId = matcher.group(0);
+                            if(sentRequests.contains(elementId) && !confirmedBonds.contains(elementId)) {
+                                confirmedBonds.add(elementId); // Validate and track confirmation
 //                            System.out.println("Confirmed bonding for: " + elementId);
-                        } else {
-                            // Log error due to duplicate or premature confirmation
-                            System.out.println("Error: Duplicate or premature bond confirmation received for " + elementId);
-                        }
-                        if(Integer.parseInt(number) == oxygenCount - 1){
-                            System.out.println("--- SANITY CHECK: OxygenClient ---");
-                            if(sentRequests.equals(confirmedBonds)) {
-                                System.out.println("All sent requests were confirmed correctly.");
                             } else {
-                                System.out.println("Mismatch between sent requests and confirmed bonds.");
+                                // Log error due to duplicate or premature confirmation
+                                System.out.println("Error: Duplicate or premature bond confirmation received for " + elementId);
                             }
-                            System.out.println("No. of sent requests: " + sentRequests.size());
-                            System.out.println(("No. of confirmed bonds: " + confirmedBonds.size()));
-                            System.exit(0);
+                            if(Integer.parseInt(number) == oxygenCount - 1){
+                                printSanityCheckReport();
+                            }
                         }
                     }
+
+
                 } catch (IOException e){
                     e.printStackTrace();
                     break;
                 }
             }
 
+        }
+
+        private void printSanityCheckReport(){
+            System.out.println("--- SANITY CHECK: OxygenClient ---");
+            if(sentRequests.equals(confirmedBonds)) {
+                System.out.println("All sent requests were confirmed correctly.");
+            } else {
+                System.out.println("Mismatch between sent requests and confirmed bonds.");
+            }
+            System.out.println("No. of sent requests: " + sentRequests.size());
+            System.out.println(("No. of confirmed bonds: " + confirmedBonds.size()));
+            System.exit(0);
         }
     }
 
@@ -112,6 +125,7 @@ public class OxygenClient {
 
         try {
             dos.writeUTF("Oxygen");
+            dos.writeInt(oxygenCount);
             for (int i = 0; i < NTHREADS; i++) {
                 final int start = i * batch;
                 final int end = (i == NTHREADS - 1) ? oxygenCount : (i + 1) * batch;
