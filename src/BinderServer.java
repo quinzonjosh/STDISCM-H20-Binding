@@ -26,6 +26,10 @@ public class BinderServer {
     private AtomicInteger totalHydrogenReceived = new AtomicInteger(0);
     private AtomicInteger totalOxygenReceived = new AtomicInteger(0);
 
+    private List<Long> timeList = new ArrayList<>();
+
+    private long lastBondConfirmationTime = Long.MAX_VALUE;
+
     public static void main(String[] args) {
         int SERVER_PORT = 4999;
         BinderServer binderServer = new BinderServer(SERVER_PORT);
@@ -40,6 +44,8 @@ public class BinderServer {
 
     public void reportSanityCheckStatus() {
         int expectedBondCount = correctBondCount();
+
+
         System.out.println("--- SANITY CHECK: BindingServer ---");
         System.out.println("Errors identified: " + errorCount.get());
         System.out.println(requestedElements.isEmpty() && bondedElements.size() == expectedBondCount ? "All bonds are correct and accounted for." : "There are discrepancies in bonds.");
@@ -47,6 +53,10 @@ public class BinderServer {
         System.out.println("Expected bond count: " + expectedBondCount);
         System.out.println("All bond requests accounted for: " + requestedElements.isEmpty());
         System.out.println("No. of bonded elements: " + bondedElements.size());
+
+        long earliestRequestTime = timeList.stream().min(Long::compare).orElse(0L);
+        long elapsedTime = lastBondConfirmationTime - earliestRequestTime;
+        System.out.println("Elapsed Time: " + elapsedTime + "ms");
     }
 
     public int correctBondCount() {
@@ -125,6 +135,9 @@ public class BinderServer {
                         // Proceed with bonding
                         bond(elements);
 
+                        lastBondConfirmationTime = System.currentTimeMillis();
+
+
                         // After bonding, update sets
                         elements.forEach(e -> {  // TODO: dbl check if this ensures that there are no duplicate requests or bond confirmations.
                             requestedElements.remove(e.getElement());
@@ -193,6 +206,7 @@ public class BinderServer {
         }
 
         private void handleOxygenClient() throws IOException {
+            long requestTime = System.currentTimeMillis();
             while (true) {
                 String molecule = dis.readUTF();
                 if (molecule.equals("DONE")) {
@@ -204,9 +218,11 @@ public class BinderServer {
                 }
             }
 //            sanityCheck();
+            timeList.add(requestTime);
         }
 
         private void handleHydrogenClient() throws IOException {
+            long requestTime = System.currentTimeMillis();
             while (true) {
                 String molecule = dis.readUTF();
                 if (molecule.equals("DONE")) {
@@ -218,6 +234,7 @@ public class BinderServer {
                 }
             }
 //            sanityCheck();
+            timeList.add(requestTime);
         }
     }
 
